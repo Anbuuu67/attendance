@@ -11,11 +11,11 @@
 
 <script>
 // Google Sheet Web App URL (replace with your deployed script URL)
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxNJeKCdl3Oehc0gy3ybWkCA4wv-2bGbpTAOFQ9hEXj-_GG9KdhDkTBhPhAD0lqL24MbA/exec";
+const SHEET_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE";
 
 let officeLat, officeLng;
 
-// Fetch workplace location from Google Sheet
+// Fetch office location from Google Sheet
 async function getOfficeLocation() {
   try {
     const response = await fetch(SHEET_URL);
@@ -45,17 +45,18 @@ function distance(lat1, lon1, lat2, lon2) {
 // Submit attendance
 async function submitAttendance() {
   const name = document.getElementById("name").value || "";
-  document.getElementById("status").innerText = "Checking location...";
-  
+  const status = document.getElementById("status");
+  status.innerText = "Requesting location...";
+
   await getOfficeLocation();
 
   if (officeLat === undefined || officeLng === undefined) {
-    document.getElementById("status").innerText = "Office location not found.";
+    status.innerText = "Office location not found.";
     return;
   }
 
   if (!navigator.geolocation) {
-    document.getElementById("status").innerText = "Geolocation not supported by your browser.";
+    status.innerText = "Geolocation not supported by your browser.";
     return;
   }
 
@@ -67,8 +68,7 @@ async function submitAttendance() {
       const dist = distance(userLat, userLng, officeLat, officeLng);
 
       if (dist > 0.1) { // >100m
-        document.getElementById("status").innerText =
-          "You are NOT at the workplace. Attendance blocked.";
+        status.innerText = "You are NOT at the workplace. Attendance blocked.";
         return;
       }
 
@@ -82,24 +82,18 @@ async function submitAttendance() {
           name: name
         }),
       }).then(() => {
-        document.getElementById("status").innerText =
-          "Attendance submitted successfully!";
+        status.innerText = "Attendance submitted successfully!";
       }).catch((err) => {
-        document.getElementById("status").innerText = "Error submitting attendance.";
+        status.innerText = "Error submitting attendance.";
         console.error(err);
       });
 
     },
     (err) => {
-      if (err.code === 1) {
-        document.getElementById("status").innerText = "Location access denied. Please enable GPS.";
-      } else if (err.code === 2) {
-        document.getElementById("status").innerText = "Position unavailable.";
-      } else if (err.code === 3) {
-        document.getElementById("status").innerText = "Location request timed out.";
-      } else {
-        document.getElementById("status").innerText = "Error getting location.";
-      }
+      if (err.code === 1) status.innerText = "Permission denied. Please allow location.";
+      else if (err.code === 2) status.innerText = "Position unavailable.";
+      else if (err.code === 3) status.innerText = "Location request timed out.";
+      else status.innerText = "Error obtaining location.";
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -107,5 +101,3 @@ async function submitAttendance() {
 </script>
 </body>
 </html>
-
-
