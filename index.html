@@ -67,7 +67,7 @@ async function submitAttendance() {
 
       const dist = distance(userLat, userLng, officeLat, officeLng);
 
-      if (dist > 0.1) { // >100m
+      if (dist > 0.5) { // >500m
         status.innerText = "You are NOT at the workplace. Attendance blocked.";
         return;
       }
@@ -101,4 +101,5 @@ async function submitAttendance() {
 </script>
 </body>
 </html>
+
 
